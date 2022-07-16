@@ -10,17 +10,19 @@
 
 #### （1）基于令牌桶限流算法+CAS实现的毫秒级全局限流器 `tokenLimiter`
 
-#### （2）基于滑动窗口限流算法实现的毫秒级IP访问限流器 `addrLimiter`
+#### （2）基于漏桶限流算法实现的毫秒级全局限流器 `leakyLimiter`
+
+#### （3）基于滑动窗口限流算法实现的毫秒级IP访问限流器 `addrLimiter`
 
 ***
 
 ### 导入工具
 
-* 引入包：`go get github.com/dpwgc/apilimiter`
+* 引入包：`go get github.com/mingkwind/apilimiter`
 
-```
+```go
 import (
-    "github/dpwgc/apilimiter"
+    "github/mingkwind/apilimiter"
 )
 ```
 
@@ -32,7 +34,7 @@ import (
 
 * 函数说明
 
-```
+```go
 // Bucket 令牌桶配置
 type Bucket struct {
     Max   int64 	//令牌桶的最大存储上限
@@ -49,7 +51,7 @@ func (bucket *Bucket) GetToken(num int64) bool
 
 * 初始化令牌桶全局限流器
 
-```
+```go
 //设置令牌桶最大容量为100，每500毫秒生产50个令牌，相当于每1000毫秒最多只能取出100个令牌
 bucket := apilimiter.Bucket{
     Max:   100,
@@ -63,7 +65,7 @@ bucket.NewTokenLimiter()
 
 * 获取令牌
 
-```
+```go
 //取出1个令牌
 isOk := bucket.GetToken(1)
 if isOk {
@@ -72,6 +74,48 @@ if isOk {
 } else {
     // 获取失败 
     fmt.Println("Access failed.", "Token bucket is empty")
+}
+```
+
+***
+
+#### 漏桶全局流量限制 `leakyLimiter`
+
+- 函数说明
+
+```go
+// 漏桶限流器
+type LeakyBucket struct {
+	Max      int64     //漏桶的最大存储上限
+	Rate     int64     //水每10ms漏出的速率，亦即每10ms产生令牌的数量
+	lastTime time.Time //上一次加水的时间
+	residue  int64     //漏桶剩余空间
+	mutex    sync.Mutex
+}
+```
+
+- 初始化漏桶全局限流器
+
+```go
+bucket := apilimiter.LeakyBucket{
+		Max:  100,
+		Rate: 1,
+}
+//初始化令牌桶限流器
+bucket.NewLeakyBucket()
+```
+
+- 获取令牌
+
+```go
+//取出1个令牌
+isOk := bucket.GetToken(1)
+if isOk {
+    // 获取成功
+    fmt.Println("Access successful")
+} else {
+    // 获取失败 
+    fmt.Println("Access failed.", "Token bucket is full")
 }
 ```
 

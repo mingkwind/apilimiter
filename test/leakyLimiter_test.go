@@ -1,7 +1,6 @@
 package test
 
 import (
-	"fmt"
 	"sync"
 	"sync/atomic"
 	"testing"
@@ -10,20 +9,15 @@ import (
 	"github.com/mingkwind/apilimiter"
 )
 
-//令牌桶全局限流器测试
-func TestTokenLimiter(t *testing.T) {
+func TestLeakyLimiter(t *testing.T) {
 
-	fmt.Println("--- tokenLimiter ---")
-
-	//设置令牌桶最大容量为100，每500毫秒生产50个令牌，相当于每1000毫秒最多只能取出100个令牌
-	bucket := apilimiter.TokenBucket{
-		Max:   100,
-		Cycle: 500,
-		Batch: 50,
+	bucket := apilimiter.LeakyBucket{
+		Max:  100,
+		Rate: 1,
 	}
 
 	//初始化令牌桶限流器
-	bucket.NewTokenLimiter()
+	bucket.NewLeakyBucket()
 	sucNum := new(int64) //成功请求数
 	*sucNum = 0
 	//模拟200次循环请求
@@ -34,7 +28,7 @@ func TestTokenLimiter(t *testing.T) {
 			*sucNum++
 			// fmt.Println(i, "Access successful", "[Time]:", time.Now().Unix())
 		} else {
-			// fmt.Println(i, "Access failed.", "Token bucket is empty", "[Time]:", time.Now().Unix())
+			// fmt.Println(i, "Access failed.", "Token bucket is full", "[Time]:", time.Now().Unix())
 		}
 	}
 	if *sucNum > 100 {
@@ -52,9 +46,9 @@ func TestTokenLimiter(t *testing.T) {
 			isOk := bucket.GetToken(1)
 			if isOk {
 				atomic.AddInt64(sucNum, 1)
-				// fmt.Println(i, "Access successful", "[Time]:", time.Now().Unix())
+				//fmt.Println(i, "Access successful", "[Time]:", time.Now().Unix())
 			} else {
-				//fmt.Println(i, "Access failed.", "Token bucket is empty", "[Time]:", time.Now().Unix())
+				//fmt.Println(i, "Access failed.", "Token bucket is full", "[Time]:", time.Now().Unix())
 			}
 			wg.Done()
 		}(i, sucNum, wg)

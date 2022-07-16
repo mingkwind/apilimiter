@@ -2,9 +2,10 @@ package test
 
 import (
 	"fmt"
-	"github/dpwgc/apilimiter"
 	"testing"
 	"time"
+
+	"github.com/mingkwind/apilimiter"
 )
 
 //滑动窗口地址限流器测试
