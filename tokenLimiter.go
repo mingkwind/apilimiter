@@ -39,7 +39,7 @@ func (bucket *TokenBucket) NewTokenLimiter() {
 func (bucket *TokenBucket) GetToken(num int64) bool {
 
 	//如果令牌桶剩余令牌数量不够
-	if bucket.residue-num < 0 {
+	if bucket.residue-num <= 0 {
 		return false
 	}
 	//令牌数量充足，取出令牌

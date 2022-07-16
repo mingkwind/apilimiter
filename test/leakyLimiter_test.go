@@ -1,6 +1,7 @@
 package test
 
 import (
+	"fmt"
 	"sync"
 	"sync/atomic"
 	"testing"
@@ -11,6 +12,8 @@ import (
 
 func TestLeakyLimiter(t *testing.T) {
 
+	fmt.Println("--- leakyLimiter ---")
+
 	bucket := apilimiter.LeakyBucket{
 		Max:  100,
 		Rate: 1,
@@ -20,19 +23,24 @@ func TestLeakyLimiter(t *testing.T) {
 	bucket.NewLeakyBucket()
 	sucNum := new(int64) //成功请求数
 	*sucNum = 0
-	//模拟200次循环请求
-	for i := 0; i < 200; i++ {
+	//模拟1000次循环请求
+	preTime := time.Now()
+	for i := 0; i < 60000; i++ {
 		//每次访问至取出1个令牌
+		time.Sleep(time.Millisecond * 1)
 		isOk := bucket.GetToken(1)
 		if isOk {
 			*sucNum++
-			// fmt.Println(i, "Access successful", "[Time]:", time.Now().Unix())
+			//fmt.Println(i, "Access successful", "[Time]:", time.Now().Unix())
 		} else {
-			// fmt.Println(i, "Access failed.", "Token bucket is full", "[Time]:", time.Now().Unix())
+			//fmt.Println(i, "Access failed.", "Token bucket is full", "[Time]:", time.Now().Unix())
 		}
 	}
-	if *sucNum > 100 {
-		t.Errorf("loop request sucNum expected <= 100, got %d", *sucNum)
+	duration := time.Since(preTime)
+	sucPerSec := float64(*sucNum) / duration.Seconds()
+	fmt.Println("sucPerSec:", sucPerSec)
+	if sucPerSec > 100 {
+		t.Errorf("loop request sucPerSec expected <= 100, got %d", int64(sucPerSec))
 	}
 	time.Sleep(time.Second * 1)
 

@@ -17,7 +17,7 @@ type LeakyBucket struct {
 // NewLeakyBucket 初始化漏桶限流器
 func (bucket *LeakyBucket) NewLeakyBucket() {
 	bucket.lastTime = time.Now()
-	bucket.residue = bucket.Max
+	bucket.residue = 0 //bucket.Max
 }
 
 // GetToken 获取令牌
@@ -26,7 +26,12 @@ func (bucket *LeakyBucket) GetToken(num int64) bool {
 	defer bucket.mutex.Unlock()
 	// 获取当前时间
 	nowTime := time.Now()
-	residue := bucket.residue + int64(nowTime.Sub(bucket.lastTime).Milliseconds()/10)*bucket.Rate
+	duration := nowTime.Sub(bucket.lastTime).Milliseconds()
+	if duration < 10 {
+		// 如果时间间隔小于10ms，则不能加水
+		return false
+	}
+	residue := bucket.residue + int64(duration/10)*bucket.Rate
 	// 漏桶最大剩余空间为bucket.Max
 	if residue > bucket.Max {
 		residue = bucket.Max
