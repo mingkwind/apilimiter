@@ -21,9 +21,9 @@ func (bucket *Bucket) NewTokenLimiter() {
 	bucket.residue = bucket.Max
 
 	go func() {
-		for {
-			//间隔一段时间发放令牌
-			time.Sleep(time.Millisecond * time.Duration(bucket.Cycle))
+		//间隔一段时间发放令牌
+		ticker := time.NewTicker(time.Duration(bucket.Cycle) * time.Millisecond)
+		for range ticker.C {
 			//如果令牌数未超过上限，则继续累加
 			if bucket.residue+bucket.Batch <= bucket.Max {
 				atomic.AddInt64(&bucket.residue, bucket.Batch)
