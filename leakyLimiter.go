@@ -36,13 +36,13 @@ func (bucket *LeakyBucket) GetToken(num int64) bool {
 	if residue > bucket.Max {
 		residue = bucket.Max
 	}
-	bucket.lastTime = nowTime
 	// 判断漏桶剩余空间是否足够
 	if afterResidue := residue - num; afterResidue >= 0 {
+		// 只有有剩余空间加水才更新漏桶剩余空间和加水时间
+		bucket.lastTime = nowTime
 		bucket.residue = afterResidue
 		return true
 	} else {
-		bucket.residue = residue
 		return false
 	}
 }
