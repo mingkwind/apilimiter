@@ -15,7 +15,7 @@ type LeakyBucket struct {
 }
 
 // NewLeakyBucket 初始化漏桶限流器
-func (bucket *LeakyBucket) NewLeakyBucket() {
+func (bucket *LeakyBucket) NewLeakyLimiter() {
 	bucket.lastTime = time.Now()
 	bucket.residue = 0 //bucket.Max
 }

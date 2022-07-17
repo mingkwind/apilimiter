@@ -20,7 +20,7 @@ func TestLeakyLimiter(t *testing.T) {
 	}
 
 	//初始化令牌桶限流器
-	bucket.NewLeakyBucket()
+	bucket.NewLeakyLimiter()
 	// time.Sleep(time.Second * 1)
 	sucNum := new(int64) //成功请求数
 	*sucNum = 0
