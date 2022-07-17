@@ -18,7 +18,8 @@ type TokenBucket struct {
 func (bucket *TokenBucket) NewTokenLimiter() {
 
 	//初始化令牌桶的剩余空间
-	bucket.residue = bucket.Max
+	//初始化为0，否则会因为刚开始是令牌数充足的而导致令牌超量发放
+	bucket.residue = 0 //bucket.Max
 
 	go func() {
 		//间隔一段时间发放令牌

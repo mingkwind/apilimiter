@@ -13,19 +13,20 @@ import (
 func TestLeakyLimiter(t *testing.T) {
 
 	fmt.Println("--- leakyLimiter ---")
-
+	// 每10ms生产一个令牌，相当于每1s最多只能取出100个令牌
 	bucket := apilimiter.LeakyBucket{
-		Max:  100,
-		Rate: 1,
+		Max:   100,
+		Cycle: 10,
 	}
 
 	//初始化令牌桶限流器
 	bucket.NewLeakyBucket()
+	// time.Sleep(time.Second * 1)
 	sucNum := new(int64) //成功请求数
 	*sucNum = 0
 	//模拟1000次循环请求
 	preTime := time.Now()
-	for i := 0; i < 60000; i++ {
+	for i := 0; i < 6000; i++ {
 		//每次访问至取出1个令牌
 		time.Sleep(time.Millisecond * 1)
 		isOk := bucket.GetToken(1)

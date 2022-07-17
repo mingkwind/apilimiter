@@ -8,7 +8,7 @@ import (
 // 漏桶限流器
 type LeakyBucket struct {
 	Max      int64     //漏桶的最大存储上限
-	Rate     int64     //水每10ms漏出的速率，亦即每10ms产生令牌的数量
+	Cycle    int64     //产生一块令牌的周期（每{cycle}毫秒生产一块令牌）
 	lastTime time.Time //上一次加水的时间
 	residue  int64     //漏桶剩余空间
 	mutex    sync.Mutex
@@ -27,11 +27,7 @@ func (bucket *LeakyBucket) GetToken(num int64) bool {
 	// 获取当前时间
 	nowTime := time.Now()
 	duration := nowTime.Sub(bucket.lastTime).Milliseconds()
-	if duration < 10 {
-		// 如果时间间隔小于10ms，则不能加水
-		return false
-	}
-	residue := bucket.residue + int64(duration/10)*bucket.Rate
+	residue := bucket.residue + int64(duration/bucket.Cycle)
 	// 漏桶最大剩余空间为bucket.Max
 	if residue > bucket.Max {
 		residue = bucket.Max

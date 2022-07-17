@@ -24,11 +24,12 @@ func TestTokenLimiter(t *testing.T) {
 
 	//初始化令牌桶限流器
 	bucket.NewTokenLimiter()
+	// time.Sleep(time.Second * 1)
 	sucNum := new(int64) //成功请求数
 	*sucNum = 0
 	//模拟1000次循环请求
 	preTime := time.Now()
-	for i := 0; i < 60000; i++ {
+	for i := 0; i < 6000; i++ {
 		//每次访问至取出1个令牌
 		time.Sleep(time.Millisecond)
 		isOk := bucket.GetToken(1)
@@ -43,7 +44,7 @@ func TestTokenLimiter(t *testing.T) {
 	sucPerSec := float64(*sucNum) / duration.Seconds()
 	fmt.Println("sucPerSec:", sucPerSec)
 	if sucPerSec > 100+10 {
-		t.Errorf("loop request sucPerSec expected <= 100, got %d", *sucNum)
+		t.Errorf("loop request sucPerSec expected <= 100, got %d", int64(sucPerSec))
 	}
 	time.Sleep(time.Second * 1)
 
